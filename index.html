@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' https://www.youtube.com https://www.youtube-nocookie.com https://i.ytimg.com;">
+<title>Presentation</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:100vw;height:100vh;overflow:hidden;background:#000;
+  font-family:"Noto Sans KR","Apple SD Gothic Neo","Malgun Gothic","Segoe UI",sans-serif;cursor:default;}
+#deck{width:100vw;height:100vh;position:relative;}
+.slide{position:absolute;inset:0;width:100%;height:100%;
+  display:none;opacity:0;transition:opacity .4s ease;
+  flex-direction:column;align-items:center;justify-content:center;}
+.slide.active{display:flex;opacity:1;}
+:root{
+  --bg0:#060e1f;--bg2:#0f1c3a;--bg3:#162347;
+  --card:#1e3a6e;--card2:#16305c;
+  --a1:#4fc3f7;--a2:#7c4dff;
+  --sub:#b0c4de;--muted:#4a6090;
+  --grad:linear-gradient(90deg,#4fc3f7,#7c4dff);
+}
+.center{display:flex;align-items:center;justify-content:center;}
+.col{flex-direction:column;}
+.abar{position:absolute;top:0;left:0;right:0;height:5px;background:var(--grad);z-index:10;}
+
+/* dots */
+#dots{position:fixed;bottom:14px;left:50%;transform:translateX(-50%);
+  display:flex;gap:6px;z-index:200;pointer-events:none;}
+.dot{width:5px;height:5px;border-radius:50%;background:rgba(255,255,255,.2);transition:.3s;}
+.dot.active{background:var(--a1);transform:scale(1.5);}
+
+/* help */
+#help{display:none;position:fixed;inset:0;background:rgba(0,0,0,.85);
+  backdrop-filter:blur(8px);z-index:999;align-items:center;justify-content:center;}
+#help.on{display:flex;}
+.hbox{background:linear-gradient(135deg,#0f1c3a,#1a2e5a);border:1px solid #2a3f6f;
+  border-radius:14px;padding:36px 48px;text-align:center;color:#fff;
+  max-width:460px;width:90%;position:relative;}
+.hbox::before{content:"";position:absolute;top:0;left:0;right:0;height:3px;
+  border-radius:14px 14px 0 0;background:var(--grad);}
+.ht{font-size:19px;font-weight:800;color:var(--a1);margin-bottom:4px;}
+.hs{font-size:10px;color:var(--muted);margin-bottom:22px;letter-spacing:.1em;}
+.hr2{display:flex;align-items:center;justify-content:space-between;margin-bottom:11px;gap:14px;}
+.hkeys{display:flex;gap:5px;flex-wrap:wrap;justify-content:flex-end;}
+.kbd{background:#1e3a6e;border:1px solid var(--a1);border-radius:4px;
+  padding:3px 9px;font-size:10px;color:var(--a1);font-weight:700;font-family:monospace;}
+.hdesc{font-size:11px;color:var(--sub);text-align:left;}
+.hc{margin-top:18px;font-size:10px;color:var(--muted);}
+
+/* S1 cover */
+#s1{background:radial-gradient(ellipse at 60% 40%,#132248 0%,#060e1f 70%);}
+.stars{position:absolute;inset:0;overflow:hidden;pointer-events:none;}
+.star{position:absolute;background:#fff;border-radius:50%;animation:tw 3s infinite alternate;}
+@keyframes tw{from{opacity:.15}to{opacity:.8}}
+.cvr{position:relative;z-index:2;text-align:center;color:#fff;}
+.cvr-line{width:60px;height:3px;background:var(--grad);margin:0 auto 22px;border-radius:2px;}
+.cvr-dept{font-size:clamp(12px,1.4vw,16px);color:var(--a1);letter-spacing:.13em;margin-bottom:14px;font-weight:500;}
+.cvr-vl{width:1px;height:36px;background:linear-gradient(180deg,transparent,var(--a1),transparent);margin:16px auto;}
+.cvr-id{font-size:clamp(14px,1.7vw,20px);color:var(--sub);letter-spacing:.2em;margin-bottom:8px;font-weight:300;}
+.cvr-name{font-size:clamp(28px,4vw,54px);font-weight:800;letter-spacing:.14em;
+  text-shadow:0 0 40px rgba(79,195,247,.3);}
+
+/* image slides */
+.imgsl{background:#06101f;position:relative;}
+.imgw{width:100%;height:100%;display:flex;align-items:center;justify-content:center;
+  padding:14px;position:relative;}
+.imgw img{max-width:100%;max-height:100%;width:auto;height:auto;
+  object-fit:contain;display:block;border-radius:6px;box-shadow:0 8px 40px rgba(0,0,0,.6);}
+.aicred{position:absolute;bottom:6px;right:12px;font-size:9px;color:var(--muted);white-space:nowrap;}
+
+/* text slides S4,S5,S6 */
+.tsl{background:var(--bg0);}
+.tsw{width:100%;max-width:980px;height:calc(100vh - 56px);
+  overflow-y:auto;padding:30px 38px 28px;
+  scrollbar-width:thin;scrollbar-color:var(--card) transparent;}
+.tsw::-webkit-scrollbar{width:3px;}
+.tsw::-webkit-scrollbar-thumb{background:var(--card);border-radius:2px;}
+.badge{display:inline-block;background:var(--card);color:var(--a1);
+  font-size:9px;font-weight:700;padding:2px 9px;border-radius:20px;letter-spacing:.07em;margin-bottom:8px;}
+.th1{font-size:clamp(13px,1.5vw,16px);font-weight:800;color:var(--a1);margin-bottom:10px;}
+.th2{font-size:11px;font-weight:700;color:var(--a1);margin:14px 0 6px;
+  padding-left:8px;border-left:3px solid var(--a2);}
+.tp{font-size:clamp(10.5px,1vw,12px);color:var(--sub);line-height:1.75;margin-bottom:6px;
+  user-select:text;-webkit-user-select:text;}
+.ttb{width:100%;border-collapse:collapse;margin:8px 0;font-size:10.5px;}
+.ttb th{background:var(--card);color:var(--a1);padding:5px 9px;
+  font-weight:700;text-align:left;border-bottom:2px solid var(--a2);}
+.ttb td{color:var(--sub);padding:5px 9px;border-bottom:1px solid #1e3a6e;
+  user-select:text;-webkit-user-select:text;vertical-align:top;line-height:1.55;}
+.ttb tr:hover td{background:rgba(79,195,247,.04);}
+.vrd{display:inline-block;padding:1px 6px;border-radius:3px;font-size:9.5px;font-weight:700;}
+.vy{background:rgba(79,195,247,.15);color:var(--a1);}
+.vp{background:rgba(124,77,255,.15);color:#b39ddb;}
+.thr{border:none;border-top:1px solid #1e3a6e;margin:12px 0;}
+
+/* BS slides S7,S8,S9 */
+.bssl{background:var(--bg0);}
+/* S7: image only */
+.bs-only{width:100%;height:100%;display:flex;align-items:center;justify-content:center;padding:20px;}
+.bs-only img{max-height:calc(100vh - 40px);max-width:96%;object-fit:contain;
+  border-radius:6px;box-shadow:0 8px 40px rgba(0,0,0,.6);}
+/* S8: split */
+.bssplit{width:100%;max-width:1140px;height:calc(100vh - 60px);display:flex;gap:0;}
+.bs-img{width:36%;min-width:0;display:flex;align-items:center;justify-content:center;padding:16px 8px 16px 16px;}
+.bs-img img{max-width:100%;max-height:100%;object-fit:contain;border-radius:6px;
+  box-shadow:0 4px 24px rgba(0,0,0,.5);}
+.bs-txt{flex:1;overflow-y:auto;padding:36px 28px 28px 22px;
+  scrollbar-width:thin;scrollbar-color:var(--card) transparent;}
+.bs-txt::-webkit-scrollbar{width:3px;}
+.bs-txt::-webkit-scrollbar-thumb{background:var(--card);border-radius:2px;}
+.bh1{font-size:clamp(13px,1.5vw,16px);font-weight:800;color:var(--a1);margin-bottom:14px;}
+.bh2{font-size:11px;font-weight:700;color:var(--a1);margin:14px 0 6px;
+  padding-left:8px;border-left:3px solid var(--a2);}
+.bp{font-size:clamp(10.5px,1vw,12px);color:var(--sub);line-height:1.75;margin-bottom:6px;
+  user-select:text;-webkit-user-select:text;}
+.ncard{background:var(--card2);border-radius:6px;padding:9px 12px;margin:5px 0;border-left:3px solid var(--a1);}
+.ncard .nl{font-size:9.5px;color:var(--a1);font-weight:700;margin-bottom:2px;}
+.ncard .nv{font-size:clamp(11px,1.2vw,13px);color:#fff;font-weight:700;}
+.ncard .nd{font-size:9.5px;color:var(--muted);margin-top:1px;}
+/* S9: text only */
+.bs-full{width:100%;max-width:880px;height:calc(100vh - 60px);
+  overflow-y:auto;padding:36px 38px 28px;
+  scrollbar-width:thin;scrollbar-color:var(--card) transparent;}
+.bs-full::-webkit-scrollbar{width:3px;}
+.bs-full::-webkit-scrollbar-thumb{background:var(--card);border-radius:2px;}
+.etag{display:inline-block;background:rgba(79,195,247,.12);color:var(--a1);
+  font-size:9.5px;font-weight:700;padding:1px 7px;border-radius:3px;margin-right:5px;}
+
+/* GitHub S10 */
+.ghsl{background:radial-gradient(ellipse at 50% 50%,#0d1f3c 0%,#060e1f 70%);}
+.ghlink{text-decoration:none;text-align:center;padding:36px 56px;
+  border:1px solid rgba(79,195,247,.3);border-radius:18px;
+  background:rgba(30,58,110,.3);backdrop-filter:blur(10px);
+  transition:all .3s;position:relative;z-index:2;display:block;max-width:580px;}
+.ghlink:hover{border-color:var(--a1);background:rgba(30,58,110,.5);
+  transform:translateY(-4px);box-shadow:0 12px 40px rgba(79,195,247,.2);}
+.ghicon{font-size:44px;margin-bottom:18px;display:block;}
+.ghtitle{font-size:clamp(16px,2.2vw,26px);font-weight:800;color:#fff;letter-spacing:.06em;margin-bottom:8px;}
+.ghsub{font-size:clamp(11px,1.3vw,14px);color:var(--a1);letter-spacing:.04em;}
+.ghurl{font-size:10px;color:var(--muted);margin-top:12px;font-family:monospace;}
+
+/* YouTube S11 */
+.ytsl{background:var(--bg0);}
+.ytgrid{display:grid;grid-template-columns:1fr 1fr;grid-template-rows:1fr 1fr;
+  gap:14px;width:92%;height:82vh;max-width:1100px;}
+.yti{background:linear-gradient(135deg,#0f1c3a,#1a2e5a);border-radius:10px;overflow:hidden;
+  border:1px solid #1e3a6e;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  text-decoration:none;cursor:pointer;transition:border-color .25s,transform .2s;position:relative;gap:16px;}
+.yti:hover{border-color:var(--a1);transform:scale(1.02);}
+.yti .play{width:64px;height:64px;background:rgba(255,60,60,.85);border-radius:50%;
+  display:flex;align-items:center;justify-content:center;flex-shrink:0;
+  transition:background .2s;}
+.yti:hover .play{background:rgb(255,0,0);}
+.yti .play::after{content:'';border-style:solid;border-width:12px 0 12px 22px;
+  border-color:transparent transparent transparent #fff;margin-left:5px;}
+.yti .ytitle{font-size:clamp(12px,1.2vw,15px);color:#fff;font-weight:700;
+  text-align:center;padding:0 20px;line-height:1.5;}
+.yti .ych{font-size:11px;color:var(--a1);margin-top:4px;}
+.ytlb{display:none;}
+
+/* Feel S12 */
+.feelsl{background:var(--bg0);overflow:hidden;}
+.feel-wrap{width:100%;max-width:800px;
+  height:calc(100vh - 96px);overflow:hidden;position:relative;
+  mask-image:linear-gradient(transparent 0%,black 7%,black 90%,transparent 100%);
+  -webkit-mask-image:linear-gradient(transparent 0%,black 7%,black 90%,transparent 100%);}
+.feel-track{will-change:transform;}
+.feel-text{font-size:clamp(12.5px,1.3vw,14.5px);color:var(--sub);
+  line-height:2.05;padding:36px 10px 56px;
+  user-select:text;-webkit-user-select:text;white-space:pre-wrap;}
+.feel-ctrl{display:flex;gap:10px;margin-top:8px;justify-content:center;align-items:center;flex-shrink:0;}
+.fbtn{background:var(--card2);border:1px solid var(--a1);color:var(--a1);
+  padding:6px 18px;border-radius:18px;font-size:11px;font-weight:700;
+  cursor:pointer;transition:.2s;user-select:none;}
+.fbtn:hover{background:rgba(79,195,247,.15);}
+.fcnt{font-size:10px;color:var(--muted);margin-top:6px;text-align:center;}
+</style>
+</head>
+<body>
+<div id="deck">
+
+<!-- S1 COVER -->
+<div class="slide active" id="s1">
+  <div class="abar"></div>
+  <div class="stars" id="stars"></div>
+  <div class="cvr center col">
+    <div class="cvr-line"></div>
+    <div class="cvr-dept">Department of English Language &amp; Literature</div>
+    <div class="cvr-vl"></div>
+    <div class="cvr-id">2490074</div>
+    <div class="cvr-name">조&nbsp;&nbsp;예&nbsp;&nbsp;은</div>
+  </div>
+</div>
+
+<!-- S2 KO Infographic -->
+<div class="slide imgsl" id="s2">
+  <div class="abar"></div>
+  <div class="imgw">
+    <img src="img/infographic_ko.png" alt="한국어 인포그래픽">
+    <span class="aicred">Claude.ai &nbsp;|&nbsp; Claude Sonnet 4.6</span>
+  </div>
+</div>
+
+<!-- S3 EN Infographic -->
+<div class="slide imgsl" id="s3">
+  <div class="abar"></div>
+  <div class="imgw">
+    <img src="img/infographic_en.png" alt="English Infographic">
+    <span class="aicred">Claude.ai &nbsp;|&nbsp; Claude Sonnet 4.6</span>
+  </div>
+</div>
+
+<!-- S4 구성요소 의견서 -->
+<div class="slide tsl" id="s4">
+  <div class="abar"></div>
+  <div class="tsw">
+    <div class="badge">검토 의견서 · 구성요소 분석 (1/2)</div>
+    <div class="th1">기능적 프롬프트의 구성요소 측면에서 본 10가지 프롬프트 검토</div>
+
+    <div class="th2">1. 기능적 프롬프트의 6가지 핵심 구성요소</div>
+    <p class="tp">기능적 프롬프트(Functional Prompt)란 AI 모델이 특정 맥락과 제약 조건 안에서 원하는 결과를 산출하도록 설계된 지시문이다. 핵심 구성요소는 다음 여섯 가지다.</p>
+    <table class="ttb">
+      <tr><th style="width:18%">구성요소</th><th style="width:36%">정의</th><th>역할</th></tr>
+      <tr><td>① 역할(Role)</td><td>수행할 페르소나·전문성 지정</td><td>응답의 시각과 전문성 수준 결정</td></tr>
+      <tr><td>② 맥락(Context)</td><td>요청의 배경 정보 및 상황 제공</td><td>모델이 사용자 의도를 정확히 파악하도록 보조</td></tr>
+      <tr><td>③ 지시(Instruction)</td><td>수행 작업의 명시적 서술</td><td>목표 행동 및 과업 범위 규정</td></tr>
+      <tr><td>④ 형식(Format)</td><td>출력 형태(길이·구조·스타일) 명시</td><td>결과물의 가독성과 활용성 향상</td></tr>
+      <tr><td>⑤ 제약(Constraint)</td><td>금지·주의·범위 제한 사항</td><td>불필요하거나 위험한 응답 방지</td></tr>
+      <tr><td>⑥ 예시(Example)</td><td>기대 출력의 예시 제공(선택)</td><td>모호성 해소 및 정확도 향상</td></tr>
+    </table>
+
+    <div class="th2">2. 각 프롬프트별 구성요소 분석</div>
+    <table class="ttb">
+      <tr><th style="width:4%">#</th><th style="width:38%">프롬프트 요약</th><th style="width:32%">포함 구성요소</th><th>충족도</th></tr>
+      <tr><td>1</td><td>구체적 답변·실사례·단계별 정보, 일반 조언 금지</td><td>지시, 형식, 제약</td><td><span class="vrd vy">적합</span></td></tr>
+      <tr><td>2</td><td>불확실성 표시·가정 설명·오류 가능성 명시</td><td>지시, 제약, 형식</td><td><span class="vrd vy">적합</span></td></tr>
+      <tr><td>3</td><td>150자 이내, 글머리 기호만 사용</td><td>형식, 제약</td><td><span class="vrd vp">부분 적합</span></td></tr>
+      <tr><td>4</td><td>오늘 실행 가능한 계획, 단계·시간 추정 포함</td><td>지시, 형식, 맥락</td><td><span class="vrd vy">적합</span></td></tr>
+      <tr><td>5</td><td>질문 3개 먼저, 이후 맞춤 답변</td><td>지시, 맥락</td><td><span class="vrd vy">적합</span></td></tr>
+      <tr><td>6</td><td>가장 강력한 반대 관점 제시 및 이유 설명</td><td>역할, 지시, 형식</td><td><span class="vrd vy">적합</span></td></tr>
+      <tr><td>7</td><td>전문가처럼 분석, 근본 원인·위험·장기 영향 분류</td><td>역할, 지시, 형식</td><td><span class="vrd vy">적합</span></td></tr>
+      <tr><td>8</td><td>확실한 정보만, 불확실 시 '모른다' 표현</td><td>제약, 지시</td><td><span class="vrd vp">부분 적합</span></td></tr>
+      <tr><td>9</td><td>소제목·글머리 기호·논리적 흐름 구성</td><td>형식</td><td><span class="vrd vp">부분 적합</span></td></tr>
+      <tr><td>10</td><td>명확한 입장, '에 달려있다' 식 답변 지양</td><td>지시, 제약</td><td><span class="vrd vy">적합</span></td></tr>
+    </table>
+
+    <div class="th2">3. 종합 평가</div>
+    <p class="tp">10개 중 7개(#1·2·4·5·6·7·10)는 <strong style="color:var(--a1)">지시+제약의 결합</strong>을 통해 구성요소를 충실히 반영한다. #3·8·9는 형식·제약에만 집중하여 역할(Role)·맥락(Context) 요소가 결여되어 있어 구성 완결성 측면에서 개선 여지가 있다. 재활용 프롬프트는 지시·형식·제약·맥락을 압축적으로 모두 포함하여 가장 완성도 높은 형태로 평가된다.</p>
+  </div>
+</div>
+
+<!-- S5 원리 의견서 (통합) -->
+<div class="slide tsl" id="s5">
+  <div class="abar"></div>
+  <div class="tsw">
+    <div class="badge">검토 의견서 · 작성 원리 분석 (2/2)</div>
+    <div class="th1">기능적 프롬프트의 작성 원리 측면에서 본 10가지 프롬프트 검토</div>
+
+    <div class="th2">1. 기능적 프롬프트의 5가지 작성 원리</div>
+    <table class="ttb">
+      <tr><th style="width:22%">원리</th><th>내용</th></tr>
+      <tr><td>명확성(Clarity)</td><td>모호한 표현 없이 수행 과업을 구체적으로 기술</td></tr>
+      <tr><td>구체성(Specificity)</td><td>추상적 요청 대신 측정 가능한 조건과 기준 제시</td></tr>
+      <tr><td>제어성(Controllability)</td><td>금지 사항과 허용 범위를 명시하여 출력 편차 최소화</td></tr>
+      <tr><td>목적 지향성(Goal-orientation)</td><td>프롬프트의 의도와 기대 결과를 일치시키는 설계</td></tr>
+      <tr><td>반복 가능성(Reusability)</td><td>다양한 입력에 적용 가능한 범용 구조 확보</td></tr>
+    </table>
+
+    <div class="th2">2. 작성 원리별 충족 여부 분석</div>
+    <table class="ttb">
+      <tr><th style="width:22%">원리</th><th style="width:28%">잘 구현된 프롬프트</th><th style="width:28%">미흡한 프롬프트</th><th>평가</th></tr>
+      <tr><td>명확성</td><td>#1, #3, #7, #9</td><td>#8 (기준 불명확)</td><td><span class="vrd vy">전반적 양호</span></td></tr>
+      <tr><td>구체성</td><td>#1, #3(150자), #4(시간추정)</td><td>#6, #10 (주관적)</td><td><span class="vrd vp">부분 충족</span></td></tr>
+      <tr><td>제어성</td><td>#2, #3, #8, #10</td><td>#5, #7</td><td><span class="vrd vy">양호</span></td></tr>
+      <tr><td>목적 지향성</td><td>#4, #5, #6, #7</td><td>#9 (형식만 지향)</td><td><span class="vrd vy">전반적 양호</span></td></tr>
+      <tr><td>반복 가능성</td><td>재활용 프롬프트</td><td>개별 10개 (상황 의존)</td><td><span class="vrd vp">조건부 충족</span></td></tr>
+    </table>
+
+    <div class="th2">3. 재활용 프롬프트의 원리 적합성</div>
+    <p class="tp">재활용 프롬프트는 간결성(형식), 구체적 사례 요구(구체성), 불확실성 표시(제어성), 맞춤 실행 단계(목적 지향성), 범용 구조(반복 가능성)를 한 문장 안에 압축함으로써 <strong style="color:var(--a1)">단일 프롬프트로서 가장 완성도 높은 형태</strong>로 평가된다.</p>
+
+    <div class="th2">4. 개선 제안</div>
+    <p class="tp">다음 두 가지를 보완하면 10개 프롬프트의 기능적 완성도를 더욱 높일 수 있다.</p>
+    <p class="tp"><strong style="color:var(--a1)">① 역할(Role) 요소 강화</strong> #3·8·9에 "전문가로서", "팩트체커 역할로" 등의 역할 부여를 추가하면 출력 품질이 향상된다. 특히 #8의 경우 역할 설정이 없어 모델이 어떤 관점에서 정확성을 판단해야 하는지 모호하게 남아 있다.</p>
+    <p class="tp"><strong style="color:var(--a1)">② 예시(Example) 요소의 선택적 추가</strong> #1·4처럼 구체적 행동을 요구하는 프롬프트에는 기대 출력 형태의 짧은 예시를 첨부하면 모델의 응답 정확도가 유의미하게 향상된다.</p>
+
+    <div class="th2">5. 결론</div>
+    <p class="tp">10가지 프롬프트는 기능적 프롬프트의 핵심 작성 원리인 명확성·제어성·목적 지향성을 충실히 반영하고 있으며, 실사용 맥락에서의 효용이 높다. 다만 역할 요소와 예시 요소가 제한적으로 활용된 점은 개선 여지로 남는다. 재활용 프롬프트는 다섯 원리를 모두 아우르는 가장 이상적인 형태로, 기능적 프롬프트 설계의 모범 사례로 평가할 수 있다.</p>
+    <div class="thr"></div>
+    <p class="tp" style="color:var(--muted);font-size:10.5px;">※ 본 검토는 Tom's Guide 기사(Elton Jones, 2026.04.30)에 수록된 10가지 프롬프트를 기능적 프롬프트 이론의 구성요소 및 작성 원리에 근거하여 분석한 의견서입니다.</p>
+  </div>
+</div>
+
+<!-- S7 재무상태표 해설 1 — 개요 및 자산 구조 -->
+<div class="slide bssl center" id="s6">
+  <div class="abar"></div>
+  <div class="bssplit">
+    <div class="bs-img"><img src="img/balance_sheet.jpg" alt="재무상태표"></div>
+    <div class="bs-txt" data-scrollable>
+      <div class="bh1">재무상태표 해설 1/3 — 개요 및 자산 구조</div>
+      <p class="bp">본 재무상태표는 대구문화방송주식회사 제55기(2024년 12월 31일 기준) 결산 공고로, 2025년 3월 25일 공시되었습니다. 자산·부채·자본의 세 축으로 회사의 재무 건전성을 살펴봅니다.</p>
+
+      <div class="bh2">■ 자산 총계: 353,521,600,987원</div>
+      <div class="ncard">
+        <div class="nl">유동자산 — 전체 자산의 약 88%</div>
+        <div class="nv">311,342,474,910원</div>
+        <div class="nd">단기금융상품 2,000억 · 현금및현금성자산 86억 · 매출채권 405억 · 미수수익 346억 · 미수금 202억 · 선급금 139억 등으로 구성. 유동성이 매우 높은 자산 구조입니다.</div>
+      </div>
+      <div class="ncard">
+        <div class="nl">비유동자산</div>
+        <div class="nv">42,179,126,077원</div>
+        <div class="nd">투자자산 176억 · 유형자산 230억(감가상각 차감 후) · 기타비유동자산 146억으로 구성됩니다.</div>
+      </div>
+
+      <div class="bh2">■ 유동자산 세부 분석</div>
+      <p class="bp">단기금융상품 2,000억은 유동자산의 약 64%를 차지합니다. 이는 회사가 상당한 규모의 현금성 자산을 안전한 금융상품으로 운용 중임을 의미하며, 단기 유동성 위기에 대한 완충 능력이 우수합니다. 미수금·미수수익·선급금 등 방송·광고 사업 특성상 발생하는 경상적 채권은 정상 범주 내에 있습니다.</p>
+
+      <div class="bh2">■ 유형자산 및 감가상각 현황</div>
+      <p class="bp">토지(74억) · 건물(177억) · 기계설비(446억) · 기기기구(1,299억) · 차량운반구(14억) 등 총 취득원가에서 누적 감가상각액을 차감한 순장부가액은 230억입니다. 방송 장비의 기술 수명 주기를 감안할 때, 향후 주요 설비 교체에 대비한 자본 지출(CapEx) 계획 검토가 필요한 시점입니다.</p>
+
+      <div class="bh2">■ 기타비유동자산</div>
+      <p class="bp">보증금 115억 · 기타비유동자산 21억 · 비유동이연법인세자산 9억으로 구성됩니다. 보증금 규모가 상대적으로 큰 것은 방송국 운영을 위한 장기 시설 임차와 관련이 있습니다.</p>
+    </div>
+  </div>
+</div>
+
+<!-- S8 재무상태표 해설 2 — 부채 및 자본 구조 -->
+<div class="slide bssl center" id="s7">
+  <div class="abar"></div>
+  <div class="bssplit">
+    <div class="bs-img"><img src="img/balance_sheet.jpg" alt="재무상태표"></div>
+    <div class="bs-txt" data-scrollable>
+      <div class="bh1">재무상태표 해설 2/3 — 부채 및 자본 구조</div>
+
+      <div class="bh2">■ 부채 총계: 4,578,086,272원</div>
+      <div class="ncard">
+        <div class="nl">유동부채</div>
+        <div class="nv">4,578,086,272원</div>
+        <div class="nd">미지급금 32억 · 수선수금 9.5억 · 예수금 4.5억 · 부가세예수금 21.7억 · 유동이연법인세부채 6.6억</div>
+      </div>
+      <div class="ncard">
+        <div class="nl">비유동부채</div>
+        <div class="nv">실질적 부담 없음</div>
+        <div class="nd">퇴직급여충당부채 45.4억이 있으나, 퇴직연금운용자산 45.1억으로 거의 전액 상계됩니다.</div>
+      </div>
+      <p class="bp" style="margin-top:8px;">부채 총계 45.7억은 자산 총계(3,535억)의 <strong style="color:var(--a1)">약 1.3%</strong>에 불과합니다. 이는 방송사 업계 기준에서도 매우 낮은 수준으로, 재무 안정성이 탁월함을 보여줍니다.</p>
+
+      <div class="bh2">■ 자본 총계: 348,943,514,715원</div>
+      <div class="ncard">
+        <div class="nl">① 자본금</div>
+        <div class="nv">833,000,000원</div>
+        <div class="nd">전액 보통주 납입 자본금. 절대 규모는 작으나 장기 수익 축적으로 자기자본 기반이 탄탄합니다.</div>
+      </div>
+      <div class="ncard">
+        <div class="nl">② 자본잉여금 — 재평가적립금</div>
+        <div class="nv">44,558,306,268원</div>
+        <div class="nd">보유 자산(주로 토지) 재평가를 통해 형성된 잉여금으로, 장부가와 시장가 사이의 차이를 반영합니다.</div>
+      </div>
+      <div class="ncard">
+        <div class="nl">③ 기타포괄손익누계액</div>
+        <div class="nv">359,550,101원</div>
+        <div class="nd">매도가능증권평가손익 등 기타포괄손익 항목의 누계입니다.</div>
+      </div>
+      <div class="ncard">
+        <div class="nl">④ 이익잉여금</div>
+        <div class="nv">303,192,658,346원</div>
+        <div class="nd">법정적립금 30억 · 임의적립금 3,000억 · 미처분이익잉여금 △6.1억. 수십 년간 누적된 당기순이익의 내부 유보 결과입니다.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- S9 재무상태표 해설 3 — 핵심 지표 및 이해관계자 평가 -->
+<div class="slide bssl center" id="s8">
+  <div class="abar"></div>
+  <div class="bssplit">
+    <div class="bs-img"><img src="img/balance_sheet.jpg" alt="재무상태표"></div>
+    <div class="bs-txt" data-scrollable>
+      <div class="bh1">재무상태표 해설 3/3 — 핵심 지표 및 종합 평가</div>
+
+      <div class="bh2">■ 핵심 재무 지표 요약</div>
+      <table class="ttb">
+        <tr><th>지표</th><th>수치</th><th>평가</th></tr>
+        <tr><td>부채비율</td><td>약 1.3%</td><td><span class="vrd vy">매우 낮음</span></td></tr>
+        <tr><td>유동비율</td><td>약 6,800%</td><td><span class="vrd vy">극히 우수</span></td></tr>
+        <tr><td>자기자본비율</td><td>약 98.7%</td><td><span class="vrd vy">매우 높음</span></td></tr>
+        <tr><td>이익잉여금 비중</td><td>자본의 약 86.9%</td><td><span class="vrd vy">내부 유보 풍부</span></td></tr>
+        <tr><td>단기금융상품 비중</td><td>유동자산의 약 64%</td><td><span class="vrd vy">안전 운용</span></td></tr>
+      </table>
+
+      <div class="bh2">■ 이해관계자별 시사점</div>
+      <p class="bp"><span class="etag">투자자</span>부채가 거의 없고 이익잉여금이 3,000억을 상회하여 장기 배당 여력은 충분합니다. 다만 미처분이익잉여금이 소폭 마이너스(△6.1억)인 점은 단기 배당 결의 시 제한 요인으로 작용할 수 있어 주의가 필요합니다.</p>
+      <p class="bp"><span class="etag">채권자</span>부채 규모가 극히 작고 유동자산이 3,113억에 달해 채무 이행 능력은 매우 우수합니다. 유동비율 6,800%는 이론상 채무 불이행 위험이 사실상 없는 수준입니다.</p>
+      <p class="bp"><span class="etag">경영진</span>①임의적립금 3,000억 활용 전략 수립, ②방송 장비 노후화에 따른 CapEx 계획, ③단기금융상품 2,000억의 수익률 최적화, ④미처분이익잉여금 정상화가 주요 재무 과제입니다.</p>
+      <p class="bp"><span class="etag">직원·노조</span>퇴직급여충당부채가 퇴직연금운용자산으로 안정적으로 적립되어 있어 퇴직급여 지급 안정성은 높습니다.</p>
+
+      <div class="bh2">■ 종합 평가</div>
+      <p class="bp">대구문화방송은 부채비율 1.3%, 자기자본비율 98.7%라는 수치가 보여주듯 재무 건전성 측면에서 매우 우수한 구조를 보유하고 있습니다. 특히 3,000억에 달하는 이익잉여금은 장기간 축적된 경영 성과의 결과물로, 향후 디지털 전환·콘텐츠 투자·설비 교체 등 중장기 전략 실행을 위한 충분한 재무적 기반이 마련되어 있음을 의미합니다.</p>
+      <p class="bp" style="color:var(--muted);font-size:10px;margin-top:8px;">※ K-GAAP 기준 작성. 상기 분석은 공시 수치 기반이며 세부 주석 별도 확인 필요.</p>
+    </div>
+  </div>
+</div>
+
+<!-- S10 GitHub -->
+<div class="slide ghsl center" id="s9">
+  <div class="abar"></div>
+  <div class="stars" id="stars2"></div>
+  <a class="ghlink" href="https://cho-yeeun.github.io/AI_2026/" target="_blank" rel="noopener">
+    <span class="ghicon">🔗</span>
+    <div class="ghtitle">AI_2026 GitHub Pages</div>
+    <div class="ghsub">조예은의 개인 리포지터리 — 새 탭으로 열기</div>
+    <div class="ghurl">https://cho-yeeun.github.io/AI_2026/</div>
+  </a>
+</div>
+
+<!-- S11 YouTube 2x2 -->
+<div class="slide ytsl center col" id="s10">
+  <div class="abar"></div>
+  <div class="ytgrid">
+    <a class="yti" href="https://www.youtube.com/watch?v=zhFO3Hct5KA" target="_blank" rel="noopener">
+      <div class="play"></div>
+      <div class="ytitle">CHEERS TO FOOTBALL 15s</div>
+      <div class="ych">⚽ AI &amp; Football</div>
+    </a>
+    <a class="yti" href="https://www.youtube.com/watch?v=_9bfFSh2ktk" target="_blank" rel="noopener">
+      <div class="play"></div>
+      <div class="ytitle">AI Reshaping Healthcare, Finance &amp; Logistics</div>
+      <div class="ych">🏥 WION, 2026</div>
+    </a>
+    <a class="yti" href="https://www.youtube.com/watch?v=vr-6dAWohnc" target="_blank" rel="noopener">
+      <div class="play"></div>
+      <div class="ytitle">AI in Finance — Practical Ways for Finance Pros</div>
+      <div class="ych">💼 2025</div>
+    </a>
+    <a class="yti" href="https://www.youtube.com/watch?v=hd25OL0RtbE" target="_blank" rel="noopener">
+      <div class="play"></div>
+      <div class="ytitle">AI in Education — Panel Discussion 2025 &amp; Beyond</div>
+      <div class="ych">🎓 Education AI Summit</div>
+    </a>
+  </div>
+</div>
+
+<!-- S12 느낀점 (AIX 프로젝트) -->
+<div class="slide feelsl center col" id="s11">
+  <div class="abar"></div>
+  <div class="feel-wrap" id="feelWrap">
+    <div class="feel-track" id="feelTrack">
+      <div class="feel-text" id="feelText">이번 AIX 프로젝트를 마무리하면서 드는 감정은 한마디로 '성장통'이었다. 광고대행사의 AIX 추진 전략이라는 주제는 처음에는 막연하게만 느껴졌다. 영어영문학부 학생으로서 '나와 AI 비즈니스 전략이 무슨 상관인가'라는 생각이 솔직히 들었다. 그러나 팀원들과 함께 자료를 쌓고 논의를 거듭하면서, 그 막연함은 점차 구체적인 문제의식으로 바뀌어갔다. 처음에는 단순한 수업 과제로만 여겼던 것이, 어느 순간부터는 실제 산업의 변화를 읽는 연습처럼 느껴지기 시작했다.
+
+프로젝트의 핵심은 생성형 AI 확산 시대에 광고대행사가 어떻게 경쟁력을 유지할 수 있는가였다. 팀은 기존 운영 구조와 시장 변화 사이의 괴리, 생성형 AI 확산에 따른 경쟁 압박 심화, 그리고 AI 활용 역량 부족이라는 세 가지 문제를 중심으로 현황을 분석했다. 이 과정에서 나는 단순히 '요즘 AI가 발달했다'는 수준의 인식을 넘어, 실제 산업에서 AI가 어떻게 조직의 구조와 인력 운용 방식 자체를 바꾸고 있는지를 구체적으로 마주하게 됐다. 광고 카피 하나가 만들어지는 과정에서부터 캠페인 전략의 수립, 데이터 분석에 이르기까지 AI가 이미 깊숙이 들어와 있다는 사실은 꽤 충격적이었다.
+
+개인적으로 이번 프로젝트에서 가장 공을 들인 부분은 발표 자료 제작이었다. 팀이 도출한 전략과 분석 결과를 슬라이드로 시각화하는 작업을 맡았는데, 단순히 텍스트를 배치하는 것이 아니라 '이 내용을 처음 보는 사람이 어떻게 받아들일까'를 고민하며 구성해야 했다. 흐름이 자연스러운지, 정보의 밀도가 균일한지, 핵심 메시지가 한눈에 들어오는지와 같은 질문들을 반복하면서 결과물을 다듬었다. 색상 하나, 여백 하나에도 의도를 담으려 했고, 슬라이드의 전체 흐름이 하나의 이야기를 전달하는 구조가 되도록 설계했다. 그 과정이 쉽지는 않았지만, 완성된 자료를 보았을 때의 만족감은 꽤 컸다.
+
+준비 과정에서의 고충도 솔직히 있었다. 팀원들의 일정을 맞추는 것부터 쉽지 않았고, 각자의 분석 방향이 달라 초안을 여러 차례 수정하기도 했다. 특히 전략 제언 부분에서는 어느 수준까지 구체적으로 써야 하는지에 대한 의견 차이가 있었는데, 그 과정에서 설득과 조율의 어려움을 실감했다. 혼자였다면 쉽게 결정했을 것들이 팀 단위에서는 생각보다 훨씬 복잡하게 느껴졌다.
+
+물론 아쉬운 점도 남는다. 조사 범위가 국내 사례에 한정되어 글로벌 광고대행사의 AI 전환 사례를 충분히 검토하지 못했다는 한계가 있다. 시간이 더 있었다면 실제 광고업계 종사자 인터뷰나 해외 사례 분석을 더 깊이 있게 진행하고 싶었다. 또한 전략 제언이 다소 이론적인 수준에 머물렀다는 점도 아쉽다. 실제 광고대행사의 재무 구조나 조직 규모에 따라 적용 가능한 AI 전환 경로가 달라질 수 있는데, 그 세부적인 차이까지 다루지 못한 것이 아쉬움으로 남는다.
+
+그럼에도 이번 프로젝트를 통해 얻은 것은 분명하다. 첫째, AI는 기술이기 이전에 '어떻게 쓸 것인가'의 문제라는 점이다. 단순히 도구를 도입하는 것만으로는 경쟁력이 생기지 않는다. 조직의 문화, 인력의 역량, 의사결정 구조가 함께 바뀌어야 한다는 것을 보고서를 쓰면서 실감했다. 둘째, 전공의 경계가 생각보다 훨씬 희미해지고 있다는 것이다. 언어를 다루는 능력은 결국 AI와의 소통, 즉 프롬프트 설계와 결과물 판단에 직결된다. 영문학적 감각이 AI 활용에서도 유효하다는 걸 이번 프로젝트가 조금이나마 확인시켜 주었다.
+
+과제 주제와 관련해 스스로의 준비 상태를 돌아보면, 솔직히 아직 부족함이 많다. AIX라는 개념 자체에 대한 사전 지식이 거의 없는 상태에서 시작했고, 광고업계에 대한 이해도 피상적인 수준이었다. 그럼에도 팀원들과 함께 자료를 찾고 정리하고 토론하는 과정 자체가 하나의 학습이었다. AI를 주제로 한 수업이지만, 결국 내가 배운 것은 AI 기술 그 자체보다 '변화하는 환경에서 어떻게 생각하고 대응할 것인가'에 가까웠다.
+
+앞으로도 AI를 수동적으로 사용하기보다, 어떻게 설계하고 어떤 맥락에서 활용할지 능동적으로 판단하는 사람이 되고 싶다는 생각이 이번 프로젝트를 통해 더 선명해졌다. 이 과제가 끝이 아니라 시작점이 되길 바라며, 앞으로도 AI와 함께 성장하는 방법을 계속 고민해 나가고 싶다.</div>
+    </div>
+  </div>
+  <div class="feel-ctrl">
+    <button class="fbtn" id="feelToggle">⏸ 일시정지</button>
+    <button class="fbtn" id="feelRestart">↺ 처음부터</button>
+  </div>
+  <div class="fcnt" id="feelCnt"></div>
+</div>
+
+</div><!-- /deck -->
+<div id="dots"></div>
+<div id="help">
+  <div class="hbox">
+    <div class="ht">KEYBOARD GUIDE</div>
+    <div class="hs">Navigation Help</div>
+    <div class="hr2"><span class="hdesc">Next slide</span>
+      <div class="hkeys"><span class="kbd">→</span><span class="kbd">Space</span><span class="kbd">Enter</span><span class="kbd">Click</span></div></div>
+    <div class="hr2"><span class="hdesc">Previous slide</span>
+      <div class="hkeys"><span class="kbd">←</span></div></div>
+    <div class="hr2"><span class="hdesc">Scroll up / down</span>
+      <div class="hkeys"><span class="kbd">↓</span><span class="kbd">↑</span></div></div>
+    <div class="hr2"><span class="hdesc">Show / hide this guide</span>
+      <div class="hkeys"><span class="kbd">K</span></div></div>
+    <div class="hc">Press K or click outside to close</div>
+  </div>
+</div>
+
+<script>
+// Stars
+function mkStars(id,n){
+  const c=document.getElementById(id);if(!c)return;
+  for(let i=0;i<n;i++){
+    const s=document.createElement('div');s.className='star';
+    const z=Math.random()*2.5+.5;
+    s.style.cssText='width:'+z+'px;height:'+z+'px;top:'+(Math.random()*100)+'%;left:'+(Math.random()*100)+'%;animation-delay:'+(Math.random()*4)+'s;animation-duration:'+(2+Math.random()*3)+'s;';
+    c.appendChild(s);
+  }
+}
+mkStars('stars',80);mkStars('stars2',60);
+
+// Slides
+const slides=Array.from(document.querySelectorAll('.slide'));
+const dotsEl=document.getElementById('dots');
+let cur=0;
+slides.forEach((_,i)=>{
+  const d=document.createElement('div');
+  d.className='dot'+(i===0?' active':'');
+  dotsEl.appendChild(d);
+});
+
+const FEEL_IDX=slides.length-1; // 마지막 슬라이드
+
+function goTo(n){
+  slides[cur].classList.remove('active');
+  dotsEl.children[cur].classList.remove('active');
+  cur=((n%slides.length)+slides.length)%slides.length;
+  slides[cur].classList.add('active');
+  dotsEl.children[cur].classList.add('active');
+  // 느낀점 슬라이드 진입 시 스크롤 시작 — display 전환 후 한 프레임 대기
+  if(cur===FEEL_IDX){
+    requestAnimationFrame(()=>requestAnimationFrame(startFeel));
+  }
+}
+function next(){goTo(cur+1);}
+function prev(){goTo(cur-1);}
+
+// Help
+const helpEl=document.getElementById('help');
+let helpOn=false;
+function toggleHelp(){helpOn?closeHelp():openHelp();}
+function openHelp(){helpOn=true;helpEl.classList.add('on');}
+function closeHelp(){helpOn=false;helpEl.classList.remove('on');}
+helpEl.addEventListener('click',e=>{if(e.target===helpEl)closeHelp();});
+
+// Input
+document.addEventListener('keydown',e=>{
+  if(e.key==='k'||e.key==='K'){toggleHelp();return;}
+  if(helpOn)return;
+
+  // ↓/↑: 현재 슬라이드의 스크롤 가능 패널 스크롤
+  const panel=slides[cur].querySelector('[data-scrollable],.tsw,.bs-txt,.bs-full,.feel-wrap');
+  if(e.key==='ArrowDown'&&panel){
+    // 느낀점은 별도 처리
+    if(cur===FEEL_IDX){e.preventDefault();pauseFeel();posY=Math.min(posY+60,fHeight());feelTrack.style.transform='translateY('+(-posY)+'px)';}
+    else{e.preventDefault();panel.scrollTop+=80;}
+    return;
+  }
+  if(e.key==='ArrowUp'&&panel){
+    if(cur===FEEL_IDX){e.preventDefault();pauseFeel();posY=Math.max(posY-60,0);feelTrack.style.transform='translateY('+(-posY)+'px)';}
+    else{e.preventDefault();panel.scrollTop-=80;}
+    return;
+  }
+  if(e.key==='ArrowRight'||e.key===' '||e.key==='Enter'){e.preventDefault();next();}
+  else if(e.key==='ArrowLeft'){e.preventDefault();prev();}
+});
+document.addEventListener('click',e=>{
+  if(helpOn)return;
+  const tag=e.target.tagName;
+  if(['A','BUTTON','IFRAME'].includes(tag))return;
+  if(e.target.closest('a,button,iframe,.tsw,.ttb,.bs-txt,.bs-full,.feel-ctrl,.feel-wrap,.ghlink'))return;
+  next();
+});
+
+// Feel scroll
+const feelWrap=document.getElementById('feelWrap');
+const feelTrack=document.getElementById('feelTrack');
+const feelToggle=document.getElementById('feelToggle');
+const feelRestart=document.getElementById('feelRestart');
+const feelCnt=document.getElementById('feelCnt');
+const feelTxtEl=document.getElementById('feelText');
+
+const cnt=feelTxtEl.textContent.replace(/\s/g,'').length;
+feelCnt.textContent='본문 글자수: '+cnt+'자 (공백 제외)';
+
+let rafId=null,posY=0,running=false;
+const SPEED=0.45;
+function fHeight(){return Math.max(0,feelTrack.scrollHeight-feelWrap.clientHeight);}
+function fStep(){
+  if(!running)return;
+  posY+=SPEED;
+  const max=fHeight();
+  if(posY>=max){posY=max;pauseFeel();return;}
+  feelTrack.style.transform='translateY('+(-posY)+'px)';
+  rafId=requestAnimationFrame(fStep);
+}
+function startFeel(){
+  if(running)return;
+  // fHeight()가 0이면 레이아웃 아직 안 됨 — 재시도
+  if(fHeight()<=0){setTimeout(startFeel,100);return;}
+  running=true;feelToggle.textContent='⏸ 일시정지';
+  rafId=requestAnimationFrame(fStep);
+}
+function pauseFeel(){
+  if(!running)return;
+  running=false;feelToggle.textContent='▶ 재생';
+  cancelAnimationFrame(rafId);
+}
+function restartFeel(){
+  posY=0;feelTrack.style.transform='translateY(0)';
+  running=false;startFeel();
+}
+feelToggle.addEventListener('click',e=>{e.stopPropagation();running?pauseFeel():startFeel();});
+feelRestart.addEventListener('click',e=>{e.stopPropagation();restartFeel();});
+</script>
+</body>
+</html>
